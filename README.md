@@ -65,8 +65,15 @@ end
 
 ## Query events
 
+**Recommended:** keep one `EventManager::Client` per process (initializer or app constant) and call `query_events` on it. That avoids creating a new client (and destination stack) on every request.
+
 ```ruby
-result = EventManager.query_events(
+# config/initializers/event_manager.rb (after EventManager.configure)
+EVENT_MANAGER_CLIENT = EventManager::Client.new
+```
+
+```ruby
+result = EVENT_MANAGER_CLIENT.query_events(
   event_meta: {
     index: "account_activity",
     operation_name: "user.activity"
