@@ -11,7 +11,7 @@ Ruby **>= 2.7.8** (stdlib only at runtime; no Rails dependency).
 Add to your `Gemfile` from GitHub:
 
 ```ruby
-gem "event_manager", git: "https://github.com/YOUR_ORG/event_manager.git"
+gem "event_manager", git: "https://github.com/harsha-unbxd/event_manager.git"
 ```
 
 ## Configuration
