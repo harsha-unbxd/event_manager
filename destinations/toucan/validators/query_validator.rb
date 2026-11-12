@@ -36,12 +36,8 @@ module EventManager
           from = pagination.fetch(:from, 1)
           size = pagination.fetch(:size, 20)
 
-          if from.to_i < 1
-            validation_fail!("pagination.from must be at least 1", destination_type: destination_type)
-          end
-          if size.to_i < 1
-            validation_fail!("pagination.size must be at least 1", destination_type: destination_type)
-          end
+          validation_fail!("pagination.from must be at least 1", destination_type: destination_type) if from.to_i < 1
+          validation_fail!("pagination.size must be at least 1", destination_type: destination_type) if size.to_i < 1
           return unless size.to_i > MAX_PAGE_SIZE
 
           validation_fail!(
@@ -73,9 +69,7 @@ module EventManager
               destination_type: destination_type
             )
           end
-          if end_date > today
-            validation_fail!("end_date cannot be after today", destination_type: destination_type)
-          end
+          validation_fail!("end_date cannot be after today", destination_type: destination_type) if end_date > today
           if end_date < earliest
             validation_fail!(
               "end_date cannot be older than #{MAX_DATE_RANGE_DAYS} days",

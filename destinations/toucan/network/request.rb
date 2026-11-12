@@ -51,9 +51,7 @@ module EventManager
 
           def handle_response(response, destination_type:)
             code = response.code.to_i
-            if code == 200
-              return parse_body(response.body, destination_type: destination_type)
-            end
+            return parse_body(response.body, destination_type: destination_type) if code == 200
 
             raise network_error(
               "query failed with HTTP #{code}: #{response.body}",

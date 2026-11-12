@@ -1,4 +1,5 @@
-name: Ruby
+# Git-only gem: CI runs tests and lint only (no RubyGems publish).
+name: CI
 
 on:
   push:
@@ -11,14 +12,15 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     name: Ruby ${{ matrix.ruby }}
     strategy:
+      fail-fast: false
       matrix:
         ruby:
-          - '2.7.8'
-          - '3.4.9'
+          - "2.7.8"
+          - "3.4.9"
 
     steps:
       - uses: actions/checkout@v6
@@ -29,5 +31,7 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
-      - name: Run the default task
-        run: bundle exec rake
+      - name: RSpec
+        run: bundle exec rspec
+      - name: RuboCop
+        run: bundle exec rubocop
