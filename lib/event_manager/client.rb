@@ -8,13 +8,6 @@ module EventManager
       pagination = deep_symbolize_keys(pagination || {})
       optionals = deep_symbolize_keys(optionals || {})
 
-      input_passed = {
-        event_meta: event_meta,
-        filter: filter,
-        pagination: pagination,
-        optionals: optionals
-      }
-
       destination_type = Configuration.destination_type
       raise ConfigurationError, "destination is not configured" if blank?(destination_type)
 
@@ -23,8 +16,7 @@ module EventManager
         filter: filter,
         pagination: pagination,
         optionals: optionals,
-        destination_type: destination_type,
-        input_passed: input_passed
+        destination_type: destination_type
       )
     end
 

@@ -136,7 +136,7 @@ end
 
 - **Configuration** failures are distinct (wrong/missing `destination` at boot, bad URL) — callers fix initializer/ENV.
 - **Everything else** during `query_events` / future APIs inherits **`EventManager::Error`** and uses **`EventManager::<Specific>Error`** class names only (no ad-hoc `StandardError`, no leaking `Net::HTTP` types).
-- Operational failures expose **context** for logging and support: **`destination_type`**, **`input_passed`** (unified payload as received/normalized), and **`message`** (human-readable). Optional **`cause`** / **`http_code`** where relevant.
+- Operational failures expose **context** for logging and support: **`destination_type`**, **`message`** (human-readable). Optional **`cause`** / **`http_code`** where relevant. Caller arguments are not attached to errors (log at call site if needed).
 
 ### Hierarchy
 
@@ -159,7 +159,6 @@ Each runtime error (subclasses of `EventManager::Error` except configuration) ca
 | Attribute | Type | Description |
 |-----------|------|-------------|
 | `destination_type` | Symbol | e.g. `:toucan` from `Configuration.destination_type` at time of call |
-| `input_passed` | Hash | Unified arguments actually used (`event_meta`, `filter`, `pagination`, `optionals`) — symbols keys, **no secrets** (document if redaction added later) |
 | `message` | String | Short summary for users/logs |
 | `http_code` | Integer / Symbol | **NetworkError only** |
 | `cause` | Exception | Optional wrapped inner error (internal); not required in public docs |
@@ -171,7 +170,6 @@ begin
   EventManager.query_events(...)
 rescue EventManager::ValidationError => e
   e.destination_type   # => :toucan
-  e.input_passed       # => { event_meta: {...}, filter: {...}, ... }
   e.message            # => "event_meta.index is required"
 end
 ```
@@ -182,8 +180,8 @@ Validation, query, and response builders/validators **raise** these types; they 
 
 | Stage | Class | Notes |
 |-------|--------|--------|
-| `EventManager.configure` / missing URL | `ConfigurationError` | No `input_passed` |
-| `QueryValidator` | `ValidationError` | Attach full unified input |
+| `EventManager.configure` / missing URL | `ConfigurationError` | Boot/configure only |
+| `QueryValidator` | `ValidationError` | Unified input rules |
 | `QueryPayloadBuilder` | `ValidationError` | e.g. unparseable date at build time |
 | `Network::Request` | `NetworkError` | Timeout, non-200, socket errors; include `http_code` |
 | JSON parse of response | `ResponseError` | Include snippet-safe message |
@@ -192,15 +190,13 @@ Validation, query, and response builders/validators **raise** these types; they 
 
 - Error hierarchy diagram or table (above).
 - **ConfigurationError** vs **EventManager::Error** — when each appears.
-- Every public error class: attributes (`destination_type`, `input_passed`, `message`, `http_code`).
+- Every public error class: attributes (`destination_type`, `message`, `http_code` on `NetworkError`).
 - Example `rescue` blocks for validation vs query failures.
-- Note: **`input_passed` is for debugging** — do not log in production without policy (PII in `filter.users`).
 
 ### Implementation follow-up
 
-- [x] Base class `EventManager::Error` with `destination_type`, `input_passed`, `initialize(message:, destination_type:, input_passed:, **opts)`.
+- [x] Base class `EventManager::Error` with `destination_type`, `initialize(message:, destination_type:, **opts)`.
 - [x] Subclasses: `ValidationError`, `NetworkError`, `ResponseError`.
-- [x] Thread `input_passed` from `Client#query_events` into validator, service, network.
 - [x] Specs: validation and query failures assert context fields.
 - [x] README “Errors” section.
 
@@ -234,4 +230,4 @@ Validation, query, and response builders/validators **raise** these types; they 
 - [ ] Unified response field descriptions.
 - [ ] Configuration: initializer example, `destination.type` enum, ENV var for `destination.url`.
 - [ ] GitHub install snippet for Gemfile.
-- [ ] Error hierarchy, `destination_type` + `input_passed`, rescue examples.
+- [ ] Error hierarchy, `destination_type`, rescue examples.

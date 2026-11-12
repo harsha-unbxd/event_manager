@@ -8,9 +8,6 @@ RSpec.describe EventManager::Destinations::Toucan::QueryValidator do
   let(:pagination) { { from: 1, size: 10 } }
   let(:optionals) { {} }
   let(:destination_type) { EventManager::Destination::TOUCAN }
-  let(:input_passed) do
-    { event_meta: event_meta, filter: filter, pagination: pagination, optionals: optionals }
-  end
 
   def validate!
     validator.validate!(
@@ -18,8 +15,7 @@ RSpec.describe EventManager::Destinations::Toucan::QueryValidator do
       filter: filter,
       pagination: pagination,
       optionals: optionals,
-      destination_type: destination_type,
-      input_passed: input_passed
+      destination_type: destination_type
     )
   end
 
@@ -27,13 +23,12 @@ RSpec.describe EventManager::Destinations::Toucan::QueryValidator do
     expect { validate! }.not_to raise_error
   end
 
-  it "raises ValidationError with destination_type and input_passed" do
+  it "raises ValidationError with destination_type" do
     event_meta[:index] = nil
 
     expect { validate! }.to raise_error(EventManager::ValidationError) do |error|
       expect(error.message).to match(/index/)
       expect(error.destination_type).to eq(EventManager::Destination::TOUCAN)
-      expect(error.input_passed).to eq(input_passed)
     end
   end
 

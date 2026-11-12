@@ -17,14 +17,14 @@ module EventManager
             @read_timeout = read_timeout
           end
 
-          def query_events(index:, destination_type:, input_passed:, **payload)
+          def query_events(index:, destination_type:, **payload)
             path = "/toucan/index/#{index}/events"
-            post_json(path, payload, destination_type: destination_type, input_passed: input_passed)
+            post_json(path, payload, destination_type: destination_type)
           end
 
           private
 
-          def post_json(path, data, destination_type:, input_passed:)
+          def post_json(path, data, destination_type:)
             uri = full_url(path)
             http = build_http_client(uri)
             request = Net::HTTP::Post.new(uri)
@@ -32,12 +32,11 @@ module EventManager
             request.body = data.to_json
 
             response = http.request(request)
-            handle_response(response, destination_type: destination_type, input_passed: input_passed)
+            handle_response(response, destination_type: destination_type)
           rescue Net::OpenTimeout, Net::ReadTimeout => e
             raise network_error(
               "request timeout: #{e.message}",
               destination_type: destination_type,
-              input_passed: input_passed,
               http_code: :request_timeout,
               cause: e
             )
@@ -45,28 +44,25 @@ module EventManager
             raise network_error(
               "service unavailable: #{e.message}",
               destination_type: destination_type,
-              input_passed: input_passed,
               http_code: :service_unavailable,
               cause: e
             )
           end
 
-          def handle_response(response, destination_type:, input_passed:)
+          def handle_response(response, destination_type:)
             code = response.code.to_i
             if code == 200
-              return parse_body(response.body, destination_type: destination_type,
-                                               input_passed: input_passed)
+              return parse_body(response.body, destination_type: destination_type)
             end
 
             raise network_error(
               "query failed with HTTP #{code}: #{response.body}",
               destination_type: destination_type,
-              input_passed: input_passed,
               http_code: code
             )
           end
 
-          def parse_body(body, destination_type:, input_passed:)
+          def parse_body(body, destination_type:)
             return {} if body.nil? || body.empty?
 
             JSON.parse(body)
@@ -74,16 +70,14 @@ module EventManager
             raise ResponseError.new(
               "invalid JSON response: #{e.message}",
               destination_type: destination_type,
-              input_passed: input_passed,
               cause: e
             )
           end
 
-          def network_error(message, destination_type:, input_passed:, http_code: nil, cause: nil)
+          def network_error(message, destination_type:, http_code: nil, cause: nil)
             NetworkError.new(
               message,
               destination_type: destination_type,
-              input_passed: input_passed,
               http_code: http_code,
               cause: cause
             )

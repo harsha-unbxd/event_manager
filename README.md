@@ -109,7 +109,7 @@ Each row in `data` includes:
 | `EventManager::NetworkError` | HTTP, timeout, socket / transport failures |
 | `EventManager::ResponseError` | Response body could not be parsed |
 
-Runtime errors inherit **`EventManager::Error`**. Each carries `message`, `destination_type`, `input_passed`, and optional `cause`.
+Runtime errors inherit **`EventManager::Error`**. Each carries `message`, `destination_type`, and optional `cause`.
 
 **Only `NetworkError`** exposes **`http_code`** (integer HTTP status or symbols such as `:request_timeout`, `:service_unavailable`).
 
@@ -118,7 +118,6 @@ begin
   EventManager.query_events(...)
 rescue EventManager::ValidationError => e
   e.destination_type
-  e.input_passed
   e.message
 rescue EventManager::NetworkError => e
   e.http_code
@@ -127,7 +126,7 @@ rescue EventManager::Error => e
 end
 ```
 
-`filter.users` and similar fields may contain PII — treat `input_passed` carefully in logs.
+Log request context at the call site if you need it for debugging (the gem does not attach caller arguments to errors).
 
 ## Development
 

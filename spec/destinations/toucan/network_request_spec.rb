@@ -15,7 +15,6 @@ RSpec.describe EventManager::Destinations::Toucan::Network::Request do
       body = client.query_events(
         index: "account_activity",
         destination_type: EventManager::Destination::TOUCAN,
-        input_passed: { event_meta: { index: "account_activity" } },
         operationName: "user.activity",
         from: 1,
         size: 10
@@ -28,19 +27,15 @@ RSpec.describe EventManager::Destinations::Toucan::Network::Request do
       stub_request(:post, "https://toucan.example.com/toucan/index/x/events")
         .to_return(status: 500, body: "error")
 
-      input_passed = { event_meta: { index: "x" } }
-
       expect do
         client.query_events(
           index: "x",
           destination_type: EventManager::Destination::TOUCAN,
-          input_passed: input_passed,
           operationName: "op"
         )
       end.to raise_error(EventManager::NetworkError) { |error|
         expect(error.http_code).to eq(500)
         expect(error.destination_type).to eq(EventManager::Destination::TOUCAN)
-        expect(error.input_passed).to eq(input_passed)
       }
     end
   end

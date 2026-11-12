@@ -67,27 +67,13 @@ module EventManager
         end
 
         def validation_fail!(message)
-          ctx = error_context
           raise ValidationError.new(
             message,
-            destination_type: ctx[:destination_type],
-            input_passed: ctx[:input_passed]
+            destination_type: Configuration.destination_type
           )
         end
 
         private
-
-        def error_context
-          {
-            destination_type: Configuration.destination_type,
-            input_passed: {
-              event_meta: @event_meta,
-              filter: @filter,
-              pagination: @pagination,
-              optionals: @optionals
-            }
-          }
-        end
 
         # Mirrors auth-master ToucanQueryBuilder::Payload
         class RequestPayload

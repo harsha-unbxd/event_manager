@@ -20,14 +20,13 @@ module EventManager
           @request = request || Network::Request.new(base_url: url)
         end
 
-        def query_events(event_meta:, filter:, pagination:, optionals:, destination_type:, input_passed:)
+        def query_events(event_meta:, filter:, pagination:, optionals:, destination_type:)
           @validator.validate!(
             event_meta: event_meta,
             filter: filter,
             pagination: pagination,
             optionals: optionals,
-            destination_type: destination_type,
-            input_passed: input_passed
+            destination_type: destination_type
           )
 
           built = @builder.build_request(
@@ -40,7 +39,6 @@ module EventManager
           raw = @request.query_events(
             index: built[:index],
             destination_type: destination_type,
-            input_passed: input_passed,
             **built[:body]
           )
           @builder.build_response(raw)
