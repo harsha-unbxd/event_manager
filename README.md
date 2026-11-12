@@ -8,11 +8,41 @@ Ruby **>= 2.7.8** (stdlib only at runtime; no Rails dependency).
 
 ## Installation
 
-Add to your `Gemfile` from GitHub:
+This gem is installed from **GitHub** (not RubyGems.org). Your environment needs **git** available when Bundler resolves dependencies (`apk add git` / `apt install git` in Docker images if needed).
+
+### `bundle add` (recommended)
+
+From your app root:
+
+```bash
+bundle add event_manager \
+  --git=https://github.com/harsha-unbxd/event_manager.git \
+  --branch=main
+```
+
+Pin a commit:
+
+```bash
+bundle add event_manager \
+  --git=https://github.com/harsha-unbxd/event_manager.git \
+  --ref=<commit_sha>
+```
+
+GitHub shorthand:
+
+```bash
+bundle add event_manager --github=harsha-unbxd/event_manager --branch=main
+```
+
+Bundler updates `Gemfile`, runs `bundle install`, and locks the revision in `Gemfile.lock`.
+
+### Manual `Gemfile` entry
 
 ```ruby
-gem "event_manager", git: "https://github.com/harsha-unbxd/event_manager.git"
+gem "event_manager", git: "https://github.com/harsha-unbxd/event_manager.git", branch: "main"
 ```
+
+Then run `bundle install`.
 
 ## Configuration
 
