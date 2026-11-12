@@ -1,7 +1,11 @@
 # frozen_string_literal: true
 
+require_relative "../../lib/event_manager/helpers/blank"
+require_relative "../../lib/event_manager/helpers/hash_keys"
+require_relative "../../lib/event_manager/helpers/tag_metadata"
 require_relative "validators/query_validator"
-require_relative "builders/query_payload_builder"
+require_relative "builders/query_request_builder"
+require_relative "builders/query_response_builder"
 require_relative "network/request"
 
 module EventManager
@@ -10,12 +14,14 @@ module EventManager
       class Service
         def initialize(
           validator: nil,
-          builder: nil,
+          request_builder: nil,
+          response_builder: nil,
           request: nil,
           base_url: nil
         )
           @validator = validator || QueryValidator.new
-          @builder = builder || QueryPayloadBuilder
+          @request_builder = request_builder || QueryRequestBuilder.new
+          @response_builder = response_builder || QueryResponseBuilder.new
           url = base_url || Configuration.destination_url
           @request = request || Network::Request.new(base_url: url)
         end
@@ -29,7 +35,7 @@ module EventManager
             destination_type: destination_type
           )
 
-          built = @builder.build_request(
+          built = @request_builder.build_request(
             event_meta: event_meta,
             filter: filter,
             pagination: pagination,
@@ -41,7 +47,7 @@ module EventManager
             destination_type: destination_type,
             **built[:body]
           )
-          @builder.build_response(raw)
+          @response_builder.build_response(raw)
         end
       end
     end

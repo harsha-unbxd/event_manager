@@ -98,7 +98,7 @@ Each row in `data` includes:
 | `message` | Human-readable message |
 | `id` | Event id |
 | `user` | `{ email: }` |
-| `metadata` | Display-friendly tag metadata |
+| `metadata` | All Toucan tags; keys strip trailing `_tag` (no other filtering) |
 
 ## Errors
 

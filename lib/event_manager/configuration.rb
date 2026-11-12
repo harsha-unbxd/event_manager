@@ -3,6 +3,9 @@
 module EventManager
   class Configuration
     class << self
+      include Helpers::Blank
+      include Helpers::HashKeys
+
       attr_reader :destination
 
       def configure
@@ -38,23 +41,6 @@ module EventManager
         raise ConfigurationError, "destination type is required" if blank?(type)
 
         config
-      end
-
-      def deep_symbolize_keys(obj)
-        case obj
-        when Hash
-          obj.each_with_object({}) do |(key, val), out|
-            out[key.to_sym] = deep_symbolize_keys(val)
-          end
-        when Array
-          obj.map { |item| deep_symbolize_keys(item) }
-        else
-          obj
-        end
-      end
-
-      def blank?(value)
-        value.nil? || (value.respond_to?(:empty?) && value.empty?)
       end
     end
   end

@@ -2,6 +2,9 @@
 
 module EventManager
   class Client
+    include Helpers::Blank
+    include Helpers::HashKeys
+
     def query_events(event_meta:, filter: {}, pagination: {}, optionals: {})
       event_meta = deep_symbolize_keys(event_meta)
       filter = deep_symbolize_keys(filter || {})
@@ -29,23 +32,6 @@ module EventManager
       else
         raise ConfigurationError, "unsupported destination type: #{Configuration.destination_type.inspect}"
       end
-    end
-
-    def deep_symbolize_keys(obj)
-      case obj
-      when Hash
-        obj.each_with_object({}) do |(key, val), out|
-          out[key.to_sym] = deep_symbolize_keys(val)
-        end
-      when Array
-        obj.map { |item| deep_symbolize_keys(item) }
-      else
-        obj
-      end
-    end
-
-    def blank?(value)
-      value.nil? || (value.respond_to?(:empty?) && value.empty?)
     end
   end
 end

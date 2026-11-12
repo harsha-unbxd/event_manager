@@ -87,7 +87,8 @@ No `toucan_query_mapping.json` in P1. Mapping is **imperative** in code (port fr
 | `lib/event_manager/configuration.rb` | Destination, endpoint URL (env/configure) |
 | `destinations/toucan/service.rb` | Orchestrate validate → build request → HTTP → build response |
 | `destinations/toucan/validators/query_validator.rb` | Unified input rules (required meta, date range, pagination bounds, 90-day window for Toucan) |
-| `destinations/toucan/builders/query_payload_builder.rb` | **`build_request(...)`** — unified args → native POST body; **`build_response(toucan_body)`** — native JSON → unified `{ total, data }` |
+| `destinations/toucan/builders/query_request_builder.rb` | **`build_request(...)`** — unified args → native POST body + index |
+| `destinations/toucan/builders/query_response_builder.rb` | **`build_response(toucan_body)`** — native JSON → unified `{ total, data }` |
 | `destinations/toucan/network/request.rb` | `POST /toucan/index/:index/events`, errors → gem errors |
 
 **Explicitly not in P1**
@@ -101,9 +102,9 @@ No `toucan_query_mapping.json` in P1. Mapping is **imperative** in code (port fr
 
 1. `EventManager#query_events` normalizes keys.
 2. `QueryValidator` on unified payload.
-3. `QueryPayloadBuilder#build_request` → body + `index` for path.
+3. `QueryRequestBuilder#build_request` → body + `index` for path.
 4. `Network::Request#query_events(index:, **body)`.
-5. `QueryPayloadBuilder#build_response` → unified result.
+5. `QueryResponseBuilder#build_response` → unified result.
 
 ### Parity reference
 
@@ -182,7 +183,7 @@ Validation, query, and response builders/validators **raise** these types; they 
 |-------|--------|--------|
 | `EventManager.configure` / missing URL | `ConfigurationError` | Boot/configure only |
 | `QueryValidator` | `ValidationError` | Unified input rules |
-| `QueryPayloadBuilder` | `ValidationError` | e.g. unparseable date at build time |
+| `QueryRequestBuilder` | `ValidationError` | e.g. unparseable date at build time |
 | `Network::Request` | `NetworkError` | Timeout, non-200, socket errors; include `http_code` |
 | JSON parse of response | `ResponseError` | Include snippet-safe message |
 
@@ -208,8 +209,8 @@ Validation, query, and response builders/validators **raise** these types; they 
 ## Tests (P1)
 
 - `QueryValidator` — required fields, date rules, pagination.
-- `QueryPayloadBuilder#build_request` — fixture unified in → expected Toucan body (from auth-master examples).
-- `QueryPayloadBuilder#build_response` — fixture Toucan JSON → unified shape.
+- `QueryRequestBuilder#build_request` — fixture unified in → expected Toucan body (from auth-master examples).
+- `QueryResponseBuilder#build_response` — fixture Toucan JSON → unified shape.
 - `Network::Request` — WebMock for URL, method, body.
 - Optional facade integration spec end-to-end with stubbed HTTP.
 

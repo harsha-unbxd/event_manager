@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
-RSpec.describe EventManager::Destinations::Toucan::QueryPayloadBuilder, ".build_request" do
+RSpec.describe EventManager::Destinations::Toucan::QueryRequestBuilder do
+  subject(:builder) { described_class.new }
+
   let(:event_meta) { { index: "account_activity", operation_name: "user.activity" } }
   let(:pagination) { { from: 2, size: 5 } }
 
   def build_request(filter:, optionals: {})
-    described_class.build_request(
+    builder.build_request(
       event_meta: event_meta,
       filter: filter,
       pagination: pagination,

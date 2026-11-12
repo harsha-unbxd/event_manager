@@ -4,6 +4,8 @@ module EventManager
   module Destinations
     module Toucan
       class QueryValidator
+        include EventManager::Helpers::Blank
+
         MAX_DATE_RANGE_DAYS = 90
         MAX_PAGE_SIZE = 100
         DATE_FORMATS = ["%d/%m/%Y", "%Y-%m-%d"].freeze
@@ -106,10 +108,6 @@ module EventManager
             message,
             destination_type: destination_type
           )
-        end
-
-        def blank?(value)
-          value.nil? || (value.respond_to?(:empty?) && value.empty?)
         end
       end
     end
