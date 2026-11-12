@@ -1,0 +1,60 @@
+plugins:
+  - rubocop-rspec
+
+AllCops:
+  TargetRubyVersion: 2.7
+  NewCops: disable
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: double_quotes
+
+Style/Documentation:
+  Enabled: false
+
+Metrics/BlockLength:
+  Exclude:
+    - "spec/**/*"
+
+Metrics/MethodLength:
+  Exclude:
+    - "destinations/**/*"
+    - "lib/event_manager/client.rb"
+
+Metrics/ParameterLists:
+  Exclude:
+    - "destinations/**/*"
+
+Metrics/AbcSize:
+  Exclude:
+    - "destinations/**/*"
+
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - "destinations/**/*"
+
+Metrics/ClassLength:
+  Exclude:
+    - "destinations/**/*"
+
+Layout/LineLength:
+  Max: 120
+  AllowedPatterns:
+    - validation_fail!
+
+RSpec/MultipleExpectations:
+  Enabled: false
+
+RSpec/SpecFilePathFormat:
+  Enabled: false
+
+RSpec/ExampleLength:
+  Max: 30
+
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+
+RSpec/MultipleDescribes:
+  Enabled: false
