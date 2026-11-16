@@ -9,13 +9,13 @@ RSpec.describe EventManager::Destinations::Toucan::Network::Request do
   describe "#query_events" do
     it "posts JSON to the query endpoint" do
       stub_request(:post, "https://toucan.example.com/toucan/index/account_activity/events")
-        .with(body: hash_including(operationName: "user.activity"))
+        .with(body: hash_including(operationNames: ["user.activity"]))
         .to_return(status: 200, body: { count: 0, eventHistory: [] }.to_json)
 
       body = client.query_events(
         index: "account_activity",
         destination_type: EventManager::Destination::TOUCAN,
-        operationName: "user.activity",
+        operationNames: ["user.activity"],
         from: 1,
         size: 10
       )
@@ -31,7 +31,7 @@ RSpec.describe EventManager::Destinations::Toucan::Network::Request do
         client.query_events(
           index: "x",
           destination_type: EventManager::Destination::TOUCAN,
-          operationName: "op"
+          operationNames: ["op"]
         )
       end.to raise_error(EventManager::NetworkError) { |error|
         expect(error.http_code).to eq(500)

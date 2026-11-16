@@ -74,25 +74,22 @@ EVENT_MANAGER_CLIENT = EventManager::Client.new
 
 ```ruby
 result = EVENT_MANAGER_CLIENT.query_events(
-  event_meta: {
-    index: "account_activity",
-    operation_name: "user.activity"
-  },
+  event_meta: { index: "account_activity" },
   filter: {
     site_keys: ["12345"],
+    event_names: ["user_activity"],
     users: ["alice@example.com"],
-    event_types: ["user_login"],
     account_id: "SF-001",
     date_range: {
       start_date: "01/11/2025",
       end_date: "10/11/2025"
-    }
+    },
+    optionals: { status: "active", login_type: "sso" }
   },
-  pagination: { from: 1, size: 20 },
-  optionals: { status: "active" }
+  pagination: { from: 1, size: 20 }
 )
 
-# => { total: Integer, data: [ { event:, timestamp:, message:, id:, user:, metadata: } ] }
+# => { total: Integer, data: [ { event_name:, timestamp:, message:, id:, user:, metadata: } ] }
 ```
 
 ### Parameters
@@ -100,29 +97,33 @@ result = EVENT_MANAGER_CLIENT.query_events(
 | Section | Field | Required | Notes |
 |---------|--------|----------|--------|
 | `event_meta` | `index` | yes | Logical index name |
-| `event_meta` | `operation_name` | no | Operation identifier for the destination; omitted from the Toucan request when blank |
 | `filter` | `site_keys` | no | Array of site/tenant keys |
+| `filter` | `event_names` | no | Unified event ids (`user_activity`); omitted when empty (Toucan → `operationNames`) |
 | `filter` | `users` | no | User identifiers (e.g. emails) |
-| `filter` | `event_types` | no | Event type ids (`user_login` style); destination maps internally |
-| `filter` | `account_id` | no | Account scope |
+| `filter` | `account_id` | no | Account scope; also mapped to tag filters |
 | `filter` | `date_range` | no | Both `start_date` and `end_date` required when set; max 90-day window |
+| `filter` | `optionals` | no | Optional filters (key/value); merged into destination tag filters (see below) |
 | `pagination` | `from`, `size` | no | Defaults `1`, `20`; max `size` 100 |
-| `optionals` | * | no | Flat key/value **tag filters** (see below) |
 
 ### Date formats
 
 `filter.date_range` accepts **DD/MM/YYYY** or **YYYY-MM-DD**.
 
-### `filter.event_types` vs `optionals`
+### Structured filters vs optional filters (all under `filter`)
 
-- **`event_types`** — restrict results to specific event types (catalog ids).
-- **`optionals`** — extra tag-style filters as arbitrary key/value pairs (e.g. `status`, custom dimensions). The gem maps these to destination tags; callers do not use Toucan field names.
+**Structured fields** map to destination query/root parameters (`site_keys`, `event_names`, `users`, `date_range`, …). Toucan examples: `siteKeys`, `operationNames`, `users`, time bounds.
+
+**Optional filters** use **`filter.optionals`** only. Each entry is merged (with `account_id` when set) into the destination **tags** object used for filtering. Toucan sends them as JSON `tags`.
 
 ```ruby
-optionals: { status: "success", login_type: "sso" }
+filter: {
+  site_keys: ["12345"],
+  event_names: ["user_activity"],
+  optionals: { region: "us-east", status: "success", login_type: "sso" }
+}
 ```
 
-Unsupported keys for a destination may be ignored or rejected; Toucan merges `optionals` into tags.
+Callers use unified keys (e.g. `status`); the gem maps them to destination tags. Unsupported keys may be ignored or rejected per destination.
 
 ### Response
 
@@ -130,7 +131,7 @@ Each row in `data` includes:
 
 | Field | Description |
 |-------|-------------|
-| `event` | Unified event type id |
+| `event_name` | Unified event id (decoded from destination operation name; Toucan `operationName`) |
 | `timestamp` | ISO8601 UTC |
 | `message` | Human-readable message |
 | `id` | Event id |

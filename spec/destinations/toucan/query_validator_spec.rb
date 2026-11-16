@@ -3,10 +3,9 @@
 RSpec.describe EventManager::Destinations::Toucan::QueryValidator do
   subject(:validator) { described_class.new }
 
-  let(:event_meta) { { index: "account_activity", operation_name: "user.activity" } }
+  let(:event_meta) { { index: "account_activity" } }
   let(:filter) { {} }
   let(:pagination) { { from: 1, size: 10 } }
-  let(:optionals) { {} }
   let(:destination_type) { EventManager::Destination::TOUCAN }
 
   def validate!
@@ -14,7 +13,6 @@ RSpec.describe EventManager::Destinations::Toucan::QueryValidator do
       event_meta: event_meta,
       filter: filter,
       pagination: pagination,
-      optionals: optionals,
       destination_type: destination_type
     )
   end
@@ -32,8 +30,8 @@ RSpec.describe EventManager::Destinations::Toucan::QueryValidator do
     end
   end
 
-  it "allows blank operation_name" do
-    event_meta.delete(:operation_name)
+  it "allows missing event_names" do
+    filter.delete(:event_names)
     expect { validate! }.not_to raise_error
   end
 

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Query filters** — `filter.event_names` replaces `event_meta.operation_name`, `filter.event_types`, and `filter.operation_names`. Toucan requests send root `operationNames` (array); event-type tag filtering is removed from the query path.
+- **Event codec** — `filter.event_names` are encoded on the way out (Toucan `operationNames`); each row returns `event_name` decoded from the destination operation name.
+- **Optional filters** — Top-level `optionals` removed; use `filter.optionals` only (mapped to destination tags). `filter.tags` is not part of the unified input.
+- **Adapters** — Toucan query builders renamed to `destinations/toucan/adapters/` (`QueryRequestAdapter#adapt`, `QueryResponseAdapter#adapt`).
+
+### Removed
+
+- **`event_meta.operation_name`** — use `filter.event_names` instead.
+- **`filter.event_types`** / **`filter.operation_names`** — use `filter.event_names` instead.
+- **Top-level `optionals`** / **`filter.tags`** — use `filter.optionals` instead.
+
 ## [0.1.0] - 2026-11-12
 
 ### Added
@@ -17,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Filters** — Optional `site_keys`, `users`, `event_types`, `account_id`, and `date_range`; arbitrary tag filters via `optionals` (mapped to Toucan tags without exposing destination field names).
 - **Pagination** — Defaults `from: 1`, `size: 20`; maximum page size 100.
 - **Date range validation** — Accepts `DD/MM/YYYY` or `YYYY-MM-DD`; requires both bounds when set; enforces a 90-day lookback and end date not after today.
-- **Event naming** — `EventNameCodec` maps unified event type ids to/from destination-specific values.
+- **Operation naming** — `EventNameCodec` maps unified operation ids to/from Toucan dot notation (`user_activity` ↔ `user.activity`).
 - **Metadata** — Toucan tags normalized in responses (`metadata`); `_tag` suffix stripped on keys via `Helpers::TagMetadata`.
 - **Error types** — `ConfigurationError` (boot/config), `ValidationError`, `NetworkError` (includes `http_code`), and `ResponseError`; runtime query failures inherit `EventManager::Error` with `destination_type` and optional `cause`.
 - **HTTP layer** — Toucan queries over stdlib `Net::HTTP` only (no runtime gem dependencies beyond Ruby >= 2.7.8).

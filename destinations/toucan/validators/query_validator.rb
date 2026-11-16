@@ -10,7 +10,7 @@ module EventManager
         MAX_PAGE_SIZE = 100
         DATE_FORMATS = ["%d/%m/%Y", "%Y-%m-%d"].freeze
 
-        def validate!(event_meta:, filter:, pagination:, optionals:, destination_type:) # rubocop:disable Lint/UnusedMethodArgument
+        def validate!(event_meta:, filter:, pagination:, destination_type:)
           validate_event_meta!(event_meta, destination_type: destination_type)
           validate_pagination!(pagination, destination_type: destination_type)
           return if blank?(filter[:date_range])

@@ -27,8 +27,7 @@ Documented in README and inline YARD. Users never need Toucan field names.
 ```ruby
 EventManager.query_events(
   event_meta: {
-    index: String,           # required — logical index name (mapped internally)
-    operation_name: String   # required
+    index: String            # required — logical index name (mapped internally)
   },
   filter: {
     users: [String],         # optional — filter by user identifiers (e.g. emails)
@@ -38,13 +37,13 @@ EventManager.query_events(
     },
     site_keys: [String],     # optional — tenant/site scope
     account_id: String,      # optional
-    event_types: [String]    # optional — restrict to configured event type ids
+    event_names: [String],   # optional — unified ids; Toucan → root operationNames
+    optionals: {}            # optional — optional filters → destination tags (Toucan: JSON `tags`)
   },
   pagination: {
     from: Integer,           # default 1
     size: Integer            # default 20
-  },
-  optionals: {}              # optional — extension bag (see below)
+  }
 )
 ```
 
@@ -55,7 +54,7 @@ EventManager.query_events(
   total: Integer,
   data: [
     {
-      event: String,
+      event_name: String,
       timestamp: String,     # ISO8601
       message: String,
       id: String,
@@ -66,16 +65,16 @@ EventManager.query_events(
 }
 ```
 
-### `optionals` — tag-style filters
+### Optional filters (`filter.optionals`)
 
-- **`optionals`** is a flat **key → value** Hash for filters that map to **destination tags** without exposing tag semantics to the caller.
-- Document clearly: keys are **filter field names** the gem maps to native tags inside Toucan (e.g. `status`, `account_id` when not already in `filter`).
+- Structured query fields live on **`filter`** (`site_keys`, `event_names`, `users`, `date_range`, `account_id`).
+- **`filter.optionals`** is a flat **key → value** hash of optional filters; entries are merged (with `account_id` when set) into destination **tags** on the request (Toucan: JSON `tags`). Callers do not use destination tag field names in the public API.
+- Callers use unified names (e.g. `status`); destinations map to native tag keys internally.
 - Destinations may **ignore** unsupported keys or **reject** unknown keys (policy TBD; document behavior).
-- Examples belong in README with copy-paste unified payloads.
 
 ### Cross-destination note
 
-The shape above is the **canonical** query contract. Non-Toucan destinations validate and map only what they support; unsupported `filter` / `optionals` keys follow documented ignore/reject rules.
+The shape above is the **canonical** query contract. Non-Toucan destinations validate and map only what they support; unsupported `filter` keys follow documented ignore/reject rules.
 
 ## P1 — Toucan query events (simplified stack)
 
@@ -85,16 +84,15 @@ No `toucan_query_mapping.json` in P1. Mapping is **imperative** in code (port fr
 |-------|----------------|
 | `lib/event_manager.rb` | Facade: `configure`, `query_events` |
 | `lib/event_manager/configuration.rb` | Destination, endpoint URL (env/configure) |
-| `destinations/toucan/service.rb` | Orchestrate validate → build request → HTTP → build response |
+| `destinations/toucan/service.rb` | Orchestrate validate → request adapter → HTTP → response adapter |
 | `destinations/toucan/validators/query_validator.rb` | Unified input rules (required meta, date range, pagination bounds, 90-day window for Toucan) |
-| `destinations/toucan/builders/query_request_builder.rb` | **`build_request(...)`** — unified args → native POST body + index |
-| `destinations/toucan/builders/query_response_builder.rb` | **`build_response(toucan_body)`** — native JSON → unified `{ total, data }` |
+| `destinations/toucan/adapters/query_request_adapter.rb` | **`adapt(...)`** — unified args → native POST body + index |
+| `destinations/toucan/adapters/query_response_adapter.rb` | **`adapt(toucan_body)`** — native JSON → unified `{ total, data }` |
 | `destinations/toucan/network/request.rb` | `POST /toucan/index/:index/events`, errors → gem errors |
 
 **Explicitly not in P1**
 
-- Request/response **adapter** classes (builder methods only).
-- JSON mapping config files.
+- JSON mapping config files (adapters are imperative code under `destinations/*/adapters/`).
 - `list_events` / catalog (can follow quickly after query).
 - Post/write path, multi-destination registry, user-supplied destination JSON.
 
@@ -102,15 +100,15 @@ No `toucan_query_mapping.json` in P1. Mapping is **imperative** in code (port fr
 
 1. `EventManager#query_events` normalizes keys.
 2. `QueryValidator` on unified payload.
-3. `QueryRequestBuilder#build_request` → body + `index` for path.
+3. `QueryRequestAdapter#adapt` → body + `index` for path.
 4. `Network::Request#query_events(index:, **body)`.
-5. `QueryResponseBuilder#build_response` → unified result.
+5. `QueryResponseAdapter#adapt` → unified result.
 
 ### Parity reference
 
 Behavior aligned with:
 
-- `auth-master` — `ToucanService#query_events`, `ToucanQueryBuilder`, `ToucanQueryResponseBuilder`, `Toucan::Request#query_events`, `EventNameCodec` for `event_types` slug encode/decode.
+- `auth-master` — `ToucanService#query_events`, `ToucanQueryBuilder`, `ToucanQueryResponseBuilder`, `Toucan::Request#query_events`, `EventNameCodec` for operation name encode/decode.
 
 ## Configuration
 
@@ -175,7 +173,7 @@ rescue EventManager::ValidationError => e
 end
 ```
 
-Validation, query, and response builders/validators **raise** these types; they do not return error hashes on failure (Ruby convention).
+Validation, adapters, and validators **raise** these types; they do not return error hashes on failure (Ruby convention).
 
 ### Where errors are raised
 
@@ -183,7 +181,7 @@ Validation, query, and response builders/validators **raise** these types; they 
 |-------|--------|--------|
 | `EventManager.configure` / missing URL | `ConfigurationError` | Boot/configure only |
 | `QueryValidator` | `ValidationError` | Unified input rules |
-| `QueryRequestBuilder` | `ValidationError` | e.g. unparseable date at build time |
+| `QueryRequestAdapter` | `ValidationError` | e.g. unparseable date at adapt time |
 | `Network::Request` | `NetworkError` | Timeout, non-200, socket errors; include `http_code` |
 | JSON parse of response | `ResponseError` | Include snippet-safe message |
 
@@ -209,8 +207,8 @@ Validation, query, and response builders/validators **raise** these types; they 
 ## Tests (P1)
 
 - `QueryValidator` — required fields, date rules, pagination.
-- `QueryRequestBuilder#build_request` — fixture unified in → expected Toucan body (from auth-master examples).
-- `QueryResponseBuilder#build_response` — fixture Toucan JSON → unified shape.
+- `QueryRequestAdapter#adapt` — fixture unified in → expected Toucan body (from auth-master examples).
+- `QueryResponseAdapter#adapt` — fixture Toucan JSON → unified shape.
 - `Network::Request` — WebMock for URL, method, body.
 - Optional facade integration spec end-to-end with stubbed HTTP.
 
@@ -220,14 +218,14 @@ Validation, query, and response builders/validators **raise** these types; they 
 - `list_events` from event catalog.
 - Shared `Mapper` for `$path` templates if JSON config returns.
 - Additional destinations under `destinations/<name>/` with same folder pattern:
-  - `service.rb`, `validators/`, `builders/`, `network/request.rb`
+  - `service.rb`, `validators/`, `adapters/`, `network/request.rb`
 
 ## Documentation checklist
 
 - [ ] Unified `query_events` parameters table (required / optional / defaults).
 - [ ] Date format(s) accepted in `filter.date_range`.
-- [ ] `filter.event_types` vs `optionals` — when to use which.
-- [ ] `optionals` tag-filter semantics and examples.
+- [x] `filter.event_names` vs optional filters — event scope (Toucan: `operationNames`); `filter.optionals` → tags.
+- [x] `filter.optionals` tag-filter semantics and examples (README).
 - [ ] Unified response field descriptions.
 - [ ] Configuration: initializer example, `destination.type` enum, ENV var for `destination.url`.
 - [ ] GitHub install snippet for Gemfile.

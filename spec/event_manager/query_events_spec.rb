@@ -25,6 +25,7 @@ RSpec.describe EventManager do
             {
               startTimeMillis: 1_700_000_000_000,
               message: "ok",
+              operationName: "user.activity",
               tags: { event_name: "user.login" },
               eventContext: { eventId: "1", user: "u@example.com" }
             }
@@ -33,13 +34,16 @@ RSpec.describe EventManager do
       )
 
     result = described_class.query_events(
-      event_meta: { index: "account_activity", operation_name: "user.activity" },
-      filter: { site_keys: ["9"] },
-      pagination: { from: 1, size: 10 },
-      optionals: { status: "active" }
+      event_meta: { index: "account_activity" },
+      filter: {
+        site_keys: ["9"],
+        event_names: ["user_activity"],
+        optionals: { status: "active" }
+      },
+      pagination: { from: 1, size: 10 }
     )
 
     expect(result[:total]).to eq(1)
-    expect(result[:data].first[:event]).to eq("user_login")
+    expect(result[:data].first[:event_name]).to eq("user_activity")
   end
 end
