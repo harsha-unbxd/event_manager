@@ -13,12 +13,12 @@ module EventManager
       destination_type = Configuration.destination_type
       raise ConfigurationError, "destination is not configured" if blank?(destination_type)
 
-      destination_service.query_events(
-        event_meta: event_meta,
-        filter: filter,
-        pagination: pagination,
-        destination_type: destination_type
-      )
+      dest = destination_service
+
+      dest.validate!(event_meta: event_meta, filter: filter, pagination: pagination, destination_type: destination_type)
+      built = dest.adapt(event_meta: event_meta, filter: filter, pagination: pagination)
+      raw = dest.dispatch(built, destination_type: destination_type)
+      dest.adapt_response_to_unified(raw)
     end
 
     private

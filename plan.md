@@ -84,7 +84,9 @@ No `toucan_query_mapping.json` in P1. Mapping is **imperative** in code (port fr
 |-------|----------------|
 | `lib/event_manager.rb` | Facade: `configure`, `query_events` |
 | `lib/event_manager/configuration.rb` | Destination, endpoint URL (env/configure) |
-| `destinations/toucan/service.rb` | Orchestrate validate → request adapter → HTTP → response adapter |
+| `destinations/base.rb` | Interface: `validate!`, `adapt`, `dispatch`, `adapt_response_to_unified` |
+| `lib/event_manager/client.rb` | Query pipeline (four destination methods) |
+| `destinations/toucan/service.rb` | Toucan: implements interface via validator, adapters, network |
 | `destinations/toucan/validators/query_validator.rb` | Unified input rules (required meta, date range, pagination bounds, 90-day window for Toucan) |
 | `destinations/toucan/adapters/query_request_adapter.rb` | **`adapt(...)`** — unified args → native POST body + index |
 | `destinations/toucan/adapters/query_response_adapter.rb` | **`adapt(toucan_body)`** — native JSON → unified `{ total, data }` |
@@ -98,11 +100,8 @@ No `toucan_query_mapping.json` in P1. Mapping is **imperative** in code (port fr
 
 ### Toucan query flow
 
-1. `EventManager#query_events` normalizes keys.
-2. `QueryValidator` on unified payload.
-3. `QueryRequestAdapter#adapt` → body + `index` for path.
-4. `Network::Request#query_events(index:, **body)`.
-5. `QueryResponseAdapter#adapt` → unified result.
+1. `Client#query_events` normalizes keys and resolves destination service.
+2. `validate!` → `adapt` (request adapter) → `dispatch` (network) → `adapt_response_to_unified` (response adapter).
 
 ### Parity reference
 

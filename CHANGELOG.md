@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Event codec** — `filter.event_names` are encoded on the way out (Toucan `operationNames`); each row returns `event_name` decoded from the destination operation name.
 - **Optional filters** — Top-level `optionals` removed; use `filter.optionals` only (mapped to destination tags). `filter.tags` is not part of the unified input.
 - **Adapters** — Toucan query builders renamed to `destinations/toucan/adapters/` (`QueryRequestAdapter#adapt`, `QueryResponseAdapter#adapt`).
+- **Query pipeline** — `Client#query_events` calls `validate!`, `adapt`, `dispatch`, `adapt_response_to_unified` on each destination; `destinations/base.rb` defines the interface.
 
 ### Removed
 
