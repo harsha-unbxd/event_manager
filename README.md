@@ -100,7 +100,7 @@ result = EVENT_MANAGER_CLIENT.query_events(
 | Section | Field | Required | Notes |
 |---------|--------|----------|--------|
 | `event_meta` | `index` | yes | Logical index name |
-| `event_meta` | `operation_name` | yes | Operation identifier for the destination |
+| `event_meta` | `operation_name` | no | Operation identifier for the destination; omitted from the Toucan request when blank |
 | `filter` | `site_keys` | no | Array of site/tenant keys |
 | `filter` | `users` | no | User identifiers (e.g. emails) |
 | `filter` | `event_types` | no | Event type ids (`user_login` style); destination maps internally |
