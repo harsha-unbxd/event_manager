@@ -41,6 +41,13 @@ RSpec.describe EventManager::Destinations::Toucan::QueryRequestBuilder do
     expect(result[:body]).to have_key(:endTimeMillis)
   end
 
+  it "omits operationName when operation_name is blank" do
+    event_meta.delete(:operation_name)
+    result = build_request(filter: { site_keys: ["123"] })
+
+    expect(result[:body]).not_to have_key(:operationName)
+  end
+
   it "omits tags when event_types and optionals are empty (auth-master with_tags skip)" do
     result = build_request(filter: { site_keys: ["1"] })
 

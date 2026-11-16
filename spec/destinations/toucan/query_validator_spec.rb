@@ -32,9 +32,9 @@ RSpec.describe EventManager::Destinations::Toucan::QueryValidator do
     end
   end
 
-  it "requires operation_name" do
-    event_meta[:operation_name] = ""
-    expect { validate! }.to raise_error(EventManager::ValidationError, /operation_name/)
+  it "allows blank operation_name" do
+    event_meta.delete(:operation_name)
+    expect { validate! }.not_to raise_error
   end
 
   it "rejects partial date_range" do

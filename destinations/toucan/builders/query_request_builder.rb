@@ -68,6 +68,8 @@ module EventManager
           end
 
           def with_operation_name
+            return self if blank?(@operation_name)
+
             @payload[:operationName] = @operation_name
             self
           end
