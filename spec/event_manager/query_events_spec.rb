@@ -34,7 +34,7 @@ RSpec.describe EventManager do
       )
 
     result = described_class.query_events(
-      event_meta: { index: "account_activity" },
+      event_meta: { topic: "account_activity" },
       filter: {
         site_keys: ["9"],
         event_names: ["user_activity"],
@@ -43,6 +43,7 @@ RSpec.describe EventManager do
       pagination: { from: 1, size: 10 }
     )
 
+    expect(result[:topic]).to eq("account_activity")
     expect(result[:total]).to eq(1)
     expect(result[:data].first[:event_name]).to eq("user_activity")
   end

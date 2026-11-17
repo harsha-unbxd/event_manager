@@ -3,11 +3,11 @@
 RSpec.describe EventManager::ValidationError do
   it "exposes destination_type and message" do
     error = described_class.new(
-      "event_meta.index is required",
+      "event_meta.topic is required",
       destination_type: EventManager::Destination::TOUCAN
     )
 
-    expect(error.message).to eq("event_meta.index is required")
+    expect(error.message).to eq("event_meta.topic is required")
     expect(error.destination_type).to eq(EventManager::Destination::TOUCAN)
     expect(error).not_to respond_to(:http_code)
   end

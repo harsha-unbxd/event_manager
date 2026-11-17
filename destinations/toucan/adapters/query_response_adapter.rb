@@ -5,9 +5,10 @@ module EventManager
     module Toucan
       module Adapters
         class QueryResponseAdapter
-          def adapt(toucan_body)
+          def adapt(raw)
             UnifiedPayload
-              .new(toucan_body)
+              .new(raw[:body], topic: raw[:index])
+              .with_topic
               .with_total
               .with_data
               .build
@@ -18,9 +19,15 @@ module EventManager
 
             OPERATION_NAME_TAG = "operation_name_tag"
 
-            def initialize(toucan_body)
+            def initialize(toucan_body, topic:)
+              @topic = topic
               @body = symbolize_top_level(toucan_body)
               @response = {}
+            end
+
+            def with_topic
+              @response[:topic] = @topic
+              self
             end
 
             def with_total

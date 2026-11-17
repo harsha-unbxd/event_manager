@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Topic** — `event_meta.topic` replaces `event_meta.index` in unified input; unified response now includes top-level `topic`. Toucan wire format unchanged (still `/toucan/index/:index/events`).
 - **Query filters** — `filter.event_names` replaces `event_meta.operation_name`, `filter.event_types`, and `filter.operation_names`. Toucan requests send root `operationNames` (array); event-type tag filtering is removed from the query path.
 - **Event codec** — `filter.event_names` are encoded on the way out (Toucan `operationNames`); each row returns `event_name` decoded from the destination operation name.
 - **Optional filters** — Top-level `optionals` removed; use `filter.optionals` only (mapped to destination tags). `filter.tags` is not part of the unified input.
@@ -17,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- **`event_meta.index`** — use `event_meta.topic` instead.
 - **`event_meta.operation_name`** — use `filter.event_names` instead.
 - **`filter.event_types`** / **`filter.operation_names`** — use `filter.event_names` instead.
 - **Top-level `optionals`** / **`filter.tags`** — use `filter.optionals` instead.

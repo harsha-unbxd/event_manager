@@ -27,7 +27,7 @@ Documented in README and inline YARD. Users never need Toucan field names.
 ```ruby
 EventManager.query_events(
   event_meta: {
-    index: String            # required — logical index name (mapped internally)
+    topic: String            # required — logical topic name (mapped internally)
   },
   filter: {
     users: [String],         # optional — filter by user identifiers (e.g. emails)
@@ -168,7 +168,7 @@ begin
   EventManager.query_events(...)
 rescue EventManager::ValidationError => e
   e.destination_type   # => :toucan
-  e.message            # => "event_meta.index is required"
+  e.message            # => "event_meta.topic is required"
 end
 ```
 

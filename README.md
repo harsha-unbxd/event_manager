@@ -74,7 +74,7 @@ EVENT_MANAGER_CLIENT = EventManager::Client.new
 
 ```ruby
 result = EVENT_MANAGER_CLIENT.query_events(
-  event_meta: { index: "account_activity" },
+  event_meta: { topic: "account_activity" },
   filter: {
     site_keys: ["12345"],
     event_names: ["user_activity"],
@@ -89,14 +89,14 @@ result = EVENT_MANAGER_CLIENT.query_events(
   pagination: { from: 1, size: 20 }
 )
 
-# => { total: Integer, data: [ { event_name:, timestamp:, message:, id:, user:, metadata: } ] }
+# => { topic: String, total: Integer, data: [ { event_name:, timestamp:, message:, id:, user:, metadata: } ] }
 ```
 
 ### Parameters
 
 | Section | Field | Required | Notes |
 |---------|--------|----------|--------|
-| `event_meta` | `index` | yes | Logical index name |
+| `event_meta` | `topic` | yes | Logical topic name (Toucan: sent as `index` in the request path) |
 | `filter` | `site_keys` | no | Array of site/tenant keys |
 | `filter` | `event_names` | no | Unified event ids (`user_activity`); omitted when empty (Toucan → `operationNames`) |
 | `filter` | `users` | no | User identifiers (e.g. emails) |
@@ -126,6 +126,8 @@ filter: {
 Callers use unified keys (e.g. `status`); the gem maps them to destination tags. Unsupported keys may be ignored or rejected per destination.
 
 ### Response
+
+Top level: `topic` (echoes `event_meta.topic`), `total` (match count), `data` (rows).
 
 Each row in `data` includes:
 

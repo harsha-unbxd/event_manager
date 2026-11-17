@@ -32,7 +32,7 @@ module EventManager
                    .build
 
             {
-              index: event_meta[:index].to_s,
+              index: event_meta[:topic].to_s,
               body: body
             }
           end

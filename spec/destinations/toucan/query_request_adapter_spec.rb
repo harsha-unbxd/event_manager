@@ -3,7 +3,7 @@
 RSpec.describe EventManager::Destinations::Toucan::Adapters::QueryRequestAdapter do
   subject(:adapter) { described_class.new }
 
-  let(:event_meta) { { index: "account_activity" } }
+  let(:event_meta) { { topic: "account_activity" } }
   let(:pagination) { { from: 2, size: 5 } }
 
   def adapt(filter:)

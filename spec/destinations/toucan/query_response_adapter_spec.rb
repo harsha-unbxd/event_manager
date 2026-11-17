@@ -17,7 +17,7 @@ RSpec.describe EventManager::Destinations::Toucan::Adapters::QueryResponseAdapte
       ]
     }
 
-    result = adapter.adapt(toucan_body)
+    result = adapter.adapt(index: "account_activity", body: toucan_body)
 
     expect(result[:total]).to eq(1)
     expect(result[:data].length).to eq(1)
@@ -46,7 +46,7 @@ RSpec.describe EventManager::Destinations::Toucan::Adapters::QueryResponseAdapte
       ]
     }
 
-    row = adapter.adapt(toucan_body)[:data].first
+    row = adapter.adapt(index: "account_activity", body: toucan_body)[:data].first
 
     expect(row[:event_name]).to eq("user_send_invite")
     expect(row[:metadata]).to eq("operation_name" => "user.send_invite")

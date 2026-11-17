@@ -47,11 +47,12 @@ module EventManager
         end
 
         def dispatch(built, destination_type:)
-          @request.query_events(
+          response = @request.query_events(
             index: built[:index],
             destination_type: destination_type,
             **built[:body]
           )
+          { index: built[:index], body: response }
         end
 
         def adapt_response_to_unified(raw)

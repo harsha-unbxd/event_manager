@@ -3,7 +3,7 @@
 RSpec.describe EventManager::Destinations::Toucan::QueryValidator do
   subject(:validator) { described_class.new }
 
-  let(:event_meta) { { index: "account_activity" } }
+  let(:event_meta) { { topic: "account_activity" } }
   let(:filter) { {} }
   let(:pagination) { { from: 1, size: 10 } }
   let(:destination_type) { EventManager::Destination::TOUCAN }
@@ -22,10 +22,10 @@ RSpec.describe EventManager::Destinations::Toucan::QueryValidator do
   end
 
   it "raises ValidationError with destination_type" do
-    event_meta[:index] = nil
+    event_meta[:topic] = nil
 
     expect { validate! }.to raise_error(EventManager::ValidationError) do |error|
-      expect(error.message).to match(/index/)
+      expect(error.message).to match(/topic/)
       expect(error.destination_type).to eq(EventManager::Destination::TOUCAN)
     end
   end

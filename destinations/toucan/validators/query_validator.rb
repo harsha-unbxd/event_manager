@@ -21,9 +21,9 @@ module EventManager
         private
 
         def validate_event_meta!(event_meta, destination_type:)
-          return unless blank?(event_meta[:index])
+          return unless blank?(event_meta[:topic])
 
-          validation_fail!("event_meta.index is required", destination_type: destination_type)
+          validation_fail!("event_meta.topic is required", destination_type: destination_type)
         end
 
         def validate_pagination!(pagination, destination_type:)
